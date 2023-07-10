@@ -10,5 +10,6 @@ set(include_dir "${CMAKE_SOURCE_DIR}/include")
 file(GLOB_RECURSE src_files "./src/main.cpp" "./src/*.cpp" "./src/*.c")
 
 add_executable(${EXE_NAME} ${src_files})
+target_include_directories(${EXE_NAME} PUBLIC ${include_dir})
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/lib")
