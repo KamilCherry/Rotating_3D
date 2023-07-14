@@ -6,7 +6,7 @@
 #include <array>
 
 void handle_events(bool& run);
-Vector2f project_3D_on_2D(Vector3f& to_project, float focal_length, float fov, float aspect_ratio);
+Vector2f project_3D_on_2D(Vector3f& to_project, float focal_length, float fov, float aspect_ratio, float camera_z);
 Vector3f rotate_vector_3D(Vector3f& to_rotate, Vector3f u_axis, float angle);
 
 int main() {
@@ -17,16 +17,18 @@ int main() {
   constexpr const float ASPECT_RATIO = (float)WIDTH/(float)HEIGHT;
   constexpr const char* TITLE = "Rotating 3D";
 
-  constexpr const float CAMERA_Z_POS = -1.8f;
+  constexpr const float CAMERA_Z_POS = -2.0f;
   constexpr const float FOCAL_LENGTH = 1.0f;
   constexpr const float FOV = M_PI / 2;
 
   constexpr const Vector3f ROTATION_AXIS(0.0f, 1.0f, 0.0f);
   // constexpr const Vector3f ROTATION_AXIS(3.0f/13.0f, 12.0f/13.0f, 4.0f/13.0f);
+  // constexpr const Vector3f ROTATION_AXIS(1.0f, 0.0f, 0.0f);
   constexpr const float ROTATION_ANGLE = M_PI / 128;
 
   Screen scr(TITLE, WIDTH, HEIGHT, SCALE);
 
+  
   Mesh solid_3d_cube;
   solid_3d_cube.triangles.reserve(12);
   solid_3d_cube.triangles.emplace_back(Triangle( {-1.0f, 1.0f, -1.0f}, {1.0f, 1.0f, -1.0f}, {1.0f, -1.0f, -1.0f} ));
@@ -46,6 +48,16 @@ int main() {
 
   solid_3d_cube.triangles.emplace_back(Triangle( {-1.0f, -1.0f, -1.0f}, {1.0f, -1.0f, -1.0f}, {1.0f, -1.0f, 1.0f} ));
   solid_3d_cube.triangles.emplace_back(Triangle( {1.0f, -1.0f, 1.0f}, {-1.0f, -1.0f, 1.0f}, {-1.0f, -1.0f, -1.0f} ));
+  
+  /*
+  Mesh solid_3d_tetrahedron;
+  solid_3d_tetrahedron.triangles.reserve(4);
+  
+  solid_3d_tetrahedron.triangles.emplace_back(Triangle( {-1.0f, -1.0f * 2.0f * 1.0f/3.0f * std::sqrt(2.0f/3.0f), -std::sqrt(3)/3}, {1.0f, -1.0f * 2.0f * 1.0f/3.0f * std::sqrt(2.0f/3.0f), -std::sqrt(3)/3}, {0.0f, -1.0f * 2.0f * 1.0f/3.0f * std::sqrt(2.0f/3.0f), 2*std::sqrt(3)/3} ));
+  solid_3d_tetrahedron.triangles.emplace_back(Triangle( {-1.0f, -1.0f * 2.0f * 1.0f/3.0f * std::sqrt(2.0f/3.0f), -std::sqrt(3)/3}, {1.0f, -1.0f * 2.0f * 1.0f/3.0f * std::sqrt(2.0f/3.0f), -std::sqrt(3)/3}, {0.0f, 2.0f * 2.0f/3.0f * std::sqrt(2.0f/3.0f), 0.0f} ));
+  solid_3d_tetrahedron.triangles.emplace_back(Triangle( {-1.0f, -1.0f * 2.0f * 1.0f/3.0f * std::sqrt(2.0f/3.0f), -std::sqrt(3)/3}, {0.0f, -1.0f * 2.0f * 1.0f/3.0f * std::sqrt(2.0f/3.0f), 2*std::sqrt(3)/3}, {0.0f, 2.0f * 2.0f/3.0f * std::sqrt(2.0f/3.0f), 0.0f} ));
+  solid_3d_tetrahedron.triangles.emplace_back(Triangle( {1.0f, -1.0f * 2.0f * 1.0f/3.0f * std::sqrt(2.0f/3.0f), -std::sqrt(3)/3}, {0.0f, -1.0f * 2.0f * 1.0f/3.0f * std::sqrt(2.0f/3.0f), 2*std::sqrt(3)/3}, {0.0f, 2.0f * 2.0f/3.0f * std::sqrt(2.0f/3.0f), 0.0f} ));
+  */
 
   bool work = true;
   while (work) {
@@ -63,9 +75,7 @@ int main() {
       std::array<Vector2f, 3> arr;
 
       for (int i = 0; i < 3; i++) {
-	Vector3f copy = t.vertices[i];
-	copy.z -= CAMERA_Z_POS;
-        arr[i] = project_3D_on_2D(copy, FOCAL_LENGTH, FOV, ASPECT_RATIO);
+        arr[i] = project_3D_on_2D(t.vertices[i], FOCAL_LENGTH, FOV, ASPECT_RATIO, CAMERA_Z_POS);
 
 	arr[i].y *= -1;
 	arr[i].x += 1; arr[i].y += 1;
@@ -96,8 +106,8 @@ void handle_events(bool& run) {
   }
 }
 
-Vector2f project_3D_on_2D(Vector3f& to_project, float focal_length, float fov, float aspect_ratio) {
-  return Vector2f( to_project.x * focal_length / aspect_ratio / (to_project.z + focal_length) / std::tan(fov/2), to_project.y * focal_length / (to_project.z + focal_length) / std::tan(fov/2));
+Vector2f project_3D_on_2D(Vector3f& to_project, float focal_length, float fov, float aspect_ratio, float camera_z) {
+  return Vector2f( to_project.x * focal_length / aspect_ratio / (std::abs(to_project.z - camera_z) + focal_length) / std::tan(fov/2), to_project.y * focal_length / (std::abs(to_project.z - camera_z) + focal_length) / std::tan(fov/2));
 }
 
 Vector3f rotate_vector_3D(Vector3f& to_rotate, Vector3f u_axis, float angle) {
