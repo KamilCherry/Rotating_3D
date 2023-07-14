@@ -14,7 +14,7 @@ struct Vector3f {
   float y;
   float z;
 
-  Vector3f(float p_x = 0, float p_y = 0, float p_z = 0) : x(p_x), y(p_y), z(p_z) {
+  constexpr Vector3f(float p_x = 0, float p_y = 0, float p_z = 0) : x(p_x), y(p_y), z(p_z) {
   }
 };
 
