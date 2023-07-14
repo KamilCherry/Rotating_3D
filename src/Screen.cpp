@@ -4,7 +4,10 @@
 
 Screen::Screen(const char* p_title, const int p_width, const int p_height, const float p_scale) : m_window(nullptr), m_renderer(nullptr) {
 
+  if (!SDL_WasInit(SDL_INIT_EVENTS))
   if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0) std::cerr << "Couldn't initialize EVENTS. Error: " << SDL_GetError() << std::endl;
+
+  if (!SDL_WasInit(SDL_INIT_VIDEO))
   if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) std::cerr << "Couldn't initialize VIDEO. Error: " << SDL_GetError() << std::endl;
 
   m_window = SDL_CreateWindow(p_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, p_width * p_scale, p_height * p_scale, SDL_WINDOW_SHOWN);
@@ -12,6 +15,8 @@ Screen::Screen(const char* p_title, const int p_width, const int p_height, const
 
   m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
   if (m_renderer == NULL) std::cerr << "Couldn't create a renderer. Error: " << SDL_GetError() << std::endl;
+
+  SDL_RenderSetScale(m_renderer, p_scale, p_scale);
 }
 
 Screen::~Screen() {
